@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Virtual</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: #333;
+        }
+
+        header, main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            background-color: lavender;
+            color: black;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            margin-bottom: 1rem;
+        }
+
+        .search-container, .add-book-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        input, select, button {
+            padding: 0.7rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input, select {
+            flex-grow: 1;
+            min-width: 200px;
+        }
+
+        button {
+            background-color: #60a3bc;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3c6382;
+            transform: translateY(-2px);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: white;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .libro-titulo {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .libro-autor {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        .libro-año {
+            float: right;
+            color: #95a5a6;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Biblioteca Virtual</h1>
+        <div class="search-container">
+            <input type="text" id="entradaBusqueda" placeholder="Buscar libros...">
+            <button id="botonBuscar">Buscar</button>
+            <select id="seleccionOrden">
+                <option value="titulo">Título</option>
+                <option value="autor">Autor</option>
+                <option value="año">Año</option>
+            </select>
+            <button id="botonOrdenar">Ordenar</button>
+        </div>
+    </header>
+    <main>
+        <h2>Agregar Nuevo Libro</h2>
+        <form id="formularioAgregarLibro" class="add-book-form">
+            <input type="text" id="nuevoTitulo" placeholder="Título" required>
+            <input type="text" id="nuevoAutor" placeholder="Autor" required>
+            <input type="number" id="nuevoAño" placeholder="Año" required>
+            <button type="submit">Agregar Libro</button>
+        </form>
+        <h2>Libros en la Biblioteca</h2>
+        <ul id="listaLibros"></ul>
+    </main>
+    <script>
+        function Libro(titulo, autor, año) {
+    this.titulo = titulo;
+    this.autor = autor;
+    this.año = año;
+}
+
+function BaseDatosLibros() {
+    if (!BaseDatosLibros.instancia) {
+        this.libros = [];
+        BaseDatosLibros.instancia = this;
+    }
+    return BaseDatosLibros.instancia;
+}
+
+BaseDatosLibros.prototype.agregarLibro = function(libro) {
+    this.libros.push(libro);
+};
+
+BaseDatosLibros.prototype.obtenerLibros = function() {
+    return this.libros;
+};
+
+BaseDatosLibros.prototype.buscarLibros = function(consulta) {
+    return this.libros.filter(function(libro) {
+        return libro.titulo.toLowerCase().includes(consulta.toLowerCase()) ||
+               libro.autor.toLowerCase().includes(consulta.toLowerCase());
+    });
+};
+
+BaseDatosLibros.prototype.ordenarLibros = function(criterio) {
+    return this.libros.slice().sort(function(a, b) {
+        if (a[criterio] < b[criterio]) return -1;
+        if (a[criterio] > b[criterio]) return 1;
+        return 0;
+    });
+};
+
+// Función para mostrar libros
+function mostrarLibros(libros) {
+    console.log("Mostrando libros:", libros); // Para depuración
+    var listaLibros = document.getElementById('listaLibros');
+    listaLibros.innerHTML = '';
+    libros.forEach(function(libro) {
+        var li = document.createElement('li');
+        
+        var tituloDiv = document.createElement('div');
+        tituloDiv.className = 'libro-titulo';
+        tituloDiv.textContent = libro.titulo;
+        li.appendChild(tituloDiv);
+        
+        var autorDiv = document.createElement('div');
+        autorDiv.className = 'libro-autor';
+        autorDiv.textContent = 'por ' + libro.autor;
+        li.appendChild(autorDiv);
+        
+        var añoDiv = document.createElement('div');
+        añoDiv.className = 'libro-año';
+        añoDiv.textContent = libro.año;
+        li.appendChild(añoDiv);
+        
+        listaLibros.appendChild(li);
+    });
+}
+
+// Inicialización y manejo de eventos
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded and parsed");
+    var bd = new BaseDatosLibros();
+
+    // Agregar libros iniciales
+    bd.agregarLibro(new Libro('Fuego y Sangre', 'George R. R. Martin', 2018));
+    bd.agregarLibro(new Libro('Harry Potter y la Piedra Filosofal ', 'J. K. Rowling ', 1997));
+    bd.agregarLibro(new Libro('Despertar', 'L. J. Smith', 1991));
+    bd.agregarLibro(new Libro('Cazadores de Sombras', 'Cassandra Clare', 2007));
+
+    console.log("Libros iniciales:", bd.obtenerLibros()); // Para depuración
+
+    // Mostrar libros iniciales
+    mostrarLibros(bd.obtenerLibros());
+
+    // Evento de búsqueda
+    document.getElementById('botonBuscar').addEventListener('click', function() {
+        var consulta = document.getElementById('entradaBusqueda').value;
+        var resultados = bd.buscarLibros(consulta);
+        mostrarLibros(resultados);
+    });
+
+    // Evento de ordenar
+    document.getElementById('botonOrdenar').addEventListener('click', function() {
+        var criterio = document.getElementById('seleccionOrden').value;
+        var librosOrdenados = bd.ordenarLibros(criterio);
+        mostrarLibros(librosOrdenados);
+    });
+
+    // Evento de agregar libro
+    document.getElementById('formularioAgregarLibro').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var titulo = document.getElementById('nuevoTitulo').value;
+        var autor = document.getElementById('nuevoAutor').value;
+        var año = parseInt(document.getElementById('nuevoAño').value);
+
+        if (titulo && autor && !isNaN(año)) {
+            var nuevoLibro = new Libro(titulo, autor, año);
+            bd.agregarLibro(nuevoLibro);
+            mostrarLibros(bd.obtenerLibros());
+
+            document.getElementById('nuevoTitulo').value = '';
+            document.getElementById('nuevoAutor').value = '';
+            document.getElementById('nuevoAño').value = '';
+
+            alert('Libro agregado con éxito!');
+        } else {
+            alert('Por favor, completa todos los campos correctamente.');
+        }
+    });
+});
+    </script>
+</body>
+</html>
